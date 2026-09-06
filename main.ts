@@ -23,8 +23,8 @@ type Availability = "can" | "maybe" | "sub" | "can't";
 
 const availabilities: Record<string, Availability> = {
   "✅": "can",
-  "🤷": "maybe",
-  "❓": "sub",
+  "❓": "maybe",
+  "❕": "sub",
   "❌": "can't",
 };
 
@@ -98,6 +98,12 @@ const createWarAvailabilityEmbeds = async (channel: TextChannel) => {
 
     const mess = await channel.send({ embeds: [buildEmbed()] });
 
+    // Get emojis from guild
+    const getEmoji = (name) => {
+      const emoji = channel.guild.emojis.cache.find((e) => e.name === name);
+      return emoji ? emoji.toString() : name;
+    };
+
     let updateTimer: NodeJS.Timeout | undefined;
     const scheduleMessageUpdate = () => {
       if (updateTimer) clearTimeout(updateTimer);
@@ -109,7 +115,7 @@ const createWarAvailabilityEmbeds = async (channel: TextChannel) => {
 
     const collectorFilter = (reaction: MessageReaction, user: User) => {
       return (
-        ["✅", "🤷", "❓", "❌"].includes(reaction.emoji.name ?? "") &&
+        ["✅", "❓", "❕", "❌"].includes(reaction.emoji.name ?? "") &&
         !user.bot
       );
     };
@@ -125,8 +131,17 @@ const createWarAvailabilityEmbeds = async (channel: TextChannel) => {
       const availability = availabilities[currentEmojiName ?? ""];
       if (!availability) return;
 
+      const userRoles = channel.guild.members.cache.get(user.id)?.roles.cache;
+      const isRoster = userRoles!.find((role) =>
+        role.name.startsWith("Roster"),
+      );
+      let userRoster = "mixte";
+      if (isRoster) {
+        userRoster = isRoster.name.split(" ")[1].toLowerCase();
+      }
+
       peopleAvailability.set(user.id, {
-        name: `<@${user.id}> (${user.username})`,
+        name: `${getEmoji(`tc_${userRoster}`)} <@${user.id}> (${user.username})`,
         availability,
       });
       scheduleMessageUpdate();
@@ -152,7 +167,7 @@ const createWarAvailabilityEmbeds = async (channel: TextChannel) => {
     });
 
     await Promise.allSettled(
-      ["✅", "🤷", "❓", "❌"].map((emoji) => mess.react(emoji)),
+      ["✅", "❓", "❕", "❌"].map((emoji) => mess.react(emoji)),
     );
   }
 };
