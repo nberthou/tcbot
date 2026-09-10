@@ -132,8 +132,9 @@ const createWarAvailabilityEmbeds = async (channel: TextChannel) => {
       if (!availability) return;
 
       const userRoles = channel.guild.members.cache.get(user.id)?.roles.cache;
-      const isRoster = userRoles!.find((role) =>
-        role.name.startsWith("Roster"),
+      const isRoster = userRoles!.find(
+        (role) =>
+          role.name.startsWith("Roster") || role.name.startsWith("Test"),
       );
       let userRoster = "mixte";
       if (isRoster) {
@@ -190,7 +191,7 @@ client.once(Events.ClientReady, (readyClient) => {
             process.env.GUILD_ROOM_ID ?? "",
           );
 
-          if (channel?.isTextBased()) {
+          if (channel && channel.isTextBased()) {
             await createWarAvailabilityEmbeds(channel as TextChannel);
           }
         } catch (error) {
