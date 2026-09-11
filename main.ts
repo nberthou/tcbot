@@ -83,7 +83,10 @@ const createWarAvailabilityEmbeds = async (channel: TextChannel) => {
             name: `${label} (${people.length})`,
             value:
               people
-                .map((person, index) => `${index + 1}. ${person.name}`)
+                .map(
+                  (person, index) =>
+                    `${index + 1}. ${String(person.name ?? "Inconnu")}`,
+                )
                 .join("\n") || emptyFieldValue,
           },
         ];
@@ -131,14 +134,16 @@ const createWarAvailabilityEmbeds = async (channel: TextChannel) => {
       const availability = availabilities[currentEmojiName ?? ""];
       if (!availability) return;
 
-      const userRoles = channel.guild.members.cache.get(user.id)?.roles.cache;
+      const member = channel.guild.members.cache.get(user.id);
+      const userRoles = member?.roles.cache;
       const isRoster = userRoles!.find(
         (role) =>
           role.name.startsWith("Roster") || role.name.startsWith("Test"),
       );
       let userRoster = "mixte";
       if (isRoster) {
-        userRoster = isRoster.name.split(" ")[1].toLowerCase();
+        const parts = isRoster.name.split(" ");
+        userRoster = (parts[1] ?? "mixte").toLowerCase();
       }
 
       peopleAvailability.set(user.id, {
