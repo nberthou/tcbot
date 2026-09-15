@@ -80,22 +80,26 @@ export const buildTimesEmbed = async (
     return embed;
   }
 
-  const byTrack = new Map<string, TtTimeWithPlayer[]>();
+  const leaderByTrack = new Map<string, TtTimeWithPlayer>();
   for (const entry of allTimes) {
-    const list = byTrack.get(entry.track) ?? [];
-    list.push(entry);
-    byTrack.set(entry.track, list);
+    if (!leaderByTrack.has(entry.track)) leaderByTrack.set(entry.track, entry);
   }
 
-  embed.setFields(
-    [...byTrack.entries()]
-      .sort(([a], [b]) => getMapName(a).localeCompare(getMapName(b)))
-      .slice(0, 25)
-      .map(([track, entries]) => ({
-        name: getMapName(track),
-        value: formatEntryList(guild, entries.slice(0, 1)),
-      })),
-  );
+  const sections = [...CUP_ORDER, RETRO_CUP]
+    .map((cup) => {
+      const lines = MAPS.filter((m) => m.cup === cup)
+        .map((m) => leaderByTrack.get(m.id))
+        .filter((entry): entry is TtTimeWithPlayer => Boolean(entry))
+        .map(
+          (entry) =>
+            `**${entry.track}:** ${getRosterEmoji(guild, entry.player.roster)} ${entry.player.pseudo} - \`${formatMsToTime(entry.timeMs)}\``,
+        );
+
+      return lines.length ? `**__${cup}__**\n${lines.join("\n")}` : null;
+    })
+    .filter((section): section is string => section !== null);
+
+  embed.setDescription(sections.join("\n\n"));
   return embed;
 };
 
