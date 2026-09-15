@@ -1,0 +1,57 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+model RecurringWar {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  channelId         String
+  weekday           String
+  hours             String[]
+  title             String
+  publishDaysBefore Int      @default(0)
+  createdAt         DateTime @default(now())
+
+  @@map("recurring_wars")
+}
+
+model ActiveWarPost {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  channelId String
+  messageId String
+  title     String
+  date      DateTime
+  color     Int
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("active_war_posts")
+}
+
+model Player {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  discordId String   @unique
+  pseudo    String
+  roster    String
+  times     TtTime[]
+  createdAt DateTime @default(now())
+
+  @@map("players")
+}
+
+model TtTime {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  player     Player   @relation(fields: [playerId], references: [id])
+  playerId   String   @db.ObjectId
+  track      String
+  timeMs     Int
+  recordedAt DateTime @default(now())
+
+  @@unique([playerId, track])
+  @@map("tt_times")
+}
