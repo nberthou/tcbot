@@ -3,7 +3,7 @@ export type Availability = "can" | "maybe" | "sub" | "can't";
 export const AVAILABILITY_BY_EMOJI: Record<string, Availability> = {
   "✅": "can",
   "❓": "maybe",
-  "❕": "sub",
+  "🔁": "sub",
   "❌": "can't",
 };
 
