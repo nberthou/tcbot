@@ -51,6 +51,58 @@ const buildAvailabilityName = async (guild: Guild, user: User) => {
   return `${getRosterEmoji(guild, userRoster)} <@${user.id}> (${user.username})`;
 };
 
+/** Limites Discord pour les embeds. */
+const MAX_FIELD_VALUE_LENGTH = 1024;
+const MAX_FIELDS = 25;
+
+/** Découpe une liste de lignes en morceaux tenant chacun sous 1024 caractères. */
+const chunkLines = (lines: string[]): string[] => {
+  const chunks: string[] = [];
+  let current: string[] = [];
+  let currentLength = 0;
+
+  for (const line of lines) {
+    const addedLength = current.length ? line.length + 1 : line.length;
+    if (currentLength + addedLength > MAX_FIELD_VALUE_LENGTH && current.length) {
+      chunks.push(current.join("\n"));
+      current = [];
+      currentLength = 0;
+    }
+    current.push(line);
+    currentLength += current.length === 1 ? line.length : line.length + 1;
+  }
+  if (current.length) chunks.push(current.join("\n"));
+
+  return chunks;
+};
+
+/**
+ * Construit un ou plusieurs champs d'embed pour une liste de personnes,
+ * en la répartissant sur plusieurs champs si elle dépasse la limite
+ * Discord de 1024 caractères par champ, plutôt que de couper la liste.
+ */
+const buildPeopleFields = (
+  label: string,
+  people: { name: string }[],
+): { name: string; value: string }[] => {
+  if (!people.length) {
+    return [{ name: `${label} (0)`, value: EMPTY_FIELD_VALUE }];
+  }
+
+  const lines = people.map(
+    (person, index) => `${index + 1}. ${String(person.name ?? "Inconnu")}`,
+  );
+  const chunks = chunkLines(lines);
+
+  return chunks.map((value, index) => ({
+    name:
+      chunks.length > 1
+        ? `${label} (${people.length}) — ${index + 1}/${chunks.length}`
+        : `${label} (${people.length})`,
+    value,
+  }));
+};
+
 const buildEmbed = (
   title: string,
   date: Date,
@@ -66,25 +118,14 @@ const buildEmbed = (
 
     if (availability !== "can" && people.length === 0) return [];
 
-    return [
-      {
-        name: `${label} (${people.length})`,
-        value:
-          people
-            .map(
-              (person, index) =>
-                `${index + 1}. ${String(person.name ?? "Inconnu")}`,
-            )
-            .join("\n") || EMPTY_FIELD_VALUE,
-      },
-    ];
+    return buildPeopleFields(label, people);
   });
 
   return new EmbedBuilder()
     .setTitle(title)
     .setDescription(`Date: ${time(date, "F")}, `)
     .setColor(color)
-    .setFields(fields);
+    .setFields(fields.slice(0, MAX_FIELDS));
 };
 
 /**
