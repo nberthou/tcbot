@@ -34,7 +34,7 @@ type PeopleAvailability = Map<
 >;
 
 /** Durée pendant laquelle un message de war accepte des réactions. */
-const COLLECTOR_DURATION_MS = 60_000 * 1440;
+const COLLECTOR_DURATION_MS = 60_000 * 1440 * 7; //
 
 const getUserRoster = async (guild: Guild, userId: string) => {
   const member = await guild.members.fetch(userId).catch(() => undefined);
@@ -63,7 +63,10 @@ const chunkLines = (lines: string[]): string[] => {
 
   for (const line of lines) {
     const addedLength = current.length ? line.length + 1 : line.length;
-    if (currentLength + addedLength > MAX_FIELD_VALUE_LENGTH && current.length) {
+    if (
+      currentLength + addedLength > MAX_FIELD_VALUE_LENGTH &&
+      current.length
+    ) {
       chunks.push(current.join("\n"));
       current = [];
       currentLength = 0;
@@ -226,8 +229,7 @@ const attachAvailabilityTracking = (
 
   collector.on("remove", (reaction, user) => {
     const availability = AVAILABILITY_BY_EMOJI[reaction.emoji.name ?? ""];
-    if (peopleAvailability.get(user.id)?.availability !== availability)
-      return;
+    if (peopleAvailability.get(user.id)?.availability !== availability) return;
 
     peopleAvailability.delete(user.id);
     scheduleMessageUpdate();
@@ -243,7 +245,7 @@ const attachAvailabilityTracking = (
  * Publie un embed de disponibilité pour un créneau de war donné et gère la
  * collecte des réactions des membres (✅/❓/❕/❌) sur ce message. Le message
  * est enregistré en base pour pouvoir restaurer le suivi des réactions si
- * le bot redémarre avant la fin de la fenêtre de collecte (24h).
+ * le bot redémarre avant la fin de la fenêtre de collecte (COLLECTOR_DURATION_MS).
  */
 export const postWarAvailability = async (
   channel: TextChannel,
@@ -294,7 +296,7 @@ export const postWarAvailabilityBatch = async (
 
 /**
  * Recharge depuis la base tous les messages de war encore actifs (postés
- * il y a moins de 24h) et réattache leur suivi de réactions, en
+ * dont la fenêtre de collecte n'est pas terminée) et réattache leur suivi de réactions, en
  * reconstruisant l'état de disponibilité à partir des réactions actuelles
  * sur Discord. À appeler une fois au démarrage du bot.
  */
@@ -319,7 +321,12 @@ export const restoreActiveWarPosts = async (client: Client) => {
 
       await message.edit({
         embeds: [
-          buildEmbed(record.title, record.date, record.color, peopleAvailability),
+          buildEmbed(
+            record.title,
+            record.date,
+            record.color,
+            peopleAvailability,
+          ),
         ],
       });
 
