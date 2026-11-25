@@ -35,6 +35,7 @@ const RAW_MAPS: Omit<MapInfo, "cup">[] = [
   { id: "AH", name: "Chemin du Chêne" },
   { id: "rMC", name: "Circuit Mario" },
   { id: "RR", name: "Route Arc-en-ciel" },
+  // Maps rétro SNES
   { id: "rMC1", name: "SNES Circuit Mario 1" },
   { id: "rMC2", name: "SNES Circuit Mario 2" },
   { id: "rMC3", name: "SNES Circuit Mario 3" },
@@ -45,6 +46,15 @@ const RAW_MAPS: Omit<MapInfo, "cup">[] = [
   { id: "rKB1", name: "SNES Plage Koopa 1" },
   { id: "rCI1", name: "SNES Ile Choco 1" },
   { id: "rCI2", name: "SNES Ile Choco 2" },
+  // Maps remix
+  { id: "MBC2", name: "Circuit Mario Bros 2" },
+  { id: "rAF2", name: "Bateau Volant 2" },
+  { id: "rSGB2", name: "Souk Maskass 2" },
+  { id: "rKTB2", name: "Plage Koopa 2" },
+  { id: "rDKP2", name: "Alpes DK 2" },
+  { id: "rWS2", name: "Stade Wario 2" },
+  { id: "SSS2", name: "Cité Fleur-de-sel 2" },
+  { id: "rDH2", name: "Désert du Soleil 2" },
 ];
 
 /** Coupes des 30 premières maps, groupées par 4 dans l'ordre du tableau. */
