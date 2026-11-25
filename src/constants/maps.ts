@@ -67,13 +67,12 @@ export const CUP_ORDER = [
   "Leaf Cup",
   "Lightning Cup",
   "Special Cup",
+  "Retro",
+  "Remix",
 ];
 
-/** Les 10 dernières maps forment une seule catégorie "Retro". */
-export const RETRO_CUP = "Retro";
-
 /** Nombre de maps dans chaque coupe de CUP_ORDER, dans l'ordre. */
-const CUP_SIZES = [4, 4, 4, 3, 4, 4, 4, 3];
+const CUP_SIZES = [4, 4, 4, 3, 4, 4, 4, 3, 10, 8];
 
 const CUP_BY_INDEX: string[] = CUP_ORDER.flatMap((cup, i) =>
   Array(CUP_SIZES[i]).fill(cup),
@@ -81,7 +80,7 @@ const CUP_BY_INDEX: string[] = CUP_ORDER.flatMap((cup, i) =>
 
 export const MAPS: MapInfo[] = RAW_MAPS.map((map, index) => ({
   ...map,
-  cup: CUP_BY_INDEX[index] ?? RETRO_CUP,
+  cup: CUP_BY_INDEX[index],
 }));
 
 const MAPS_BY_ID = new Map(MAPS.map((m) => [m.id, m]));
